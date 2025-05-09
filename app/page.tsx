@@ -1,6 +1,32 @@
+// 添加 Vercel 的动态配置支持
+export const dynamic = 'force-dynamic';
+
+import React, { useState } from 'react';
 import Image from "next/image";
 
 export default function Home() {
+  const [markdown, setMarkdown] = useState('');
+
+  const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = event.clipboardData.items;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = reader.result;
+            if (typeof base64 === 'string') {
+              const markdownImage = `![Image](data:${item.type};base64,${base64.split(',')[1]})`;
+              setMarkdown((prev) => `${prev}\n${markdownImage}`);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -98,6 +124,16 @@ export default function Home() {
           Go to nextjs.org →
         </a>
       </footer>
+      <div style={{ padding: '20px' }}>
+        <h1>粘贴图片转Markdown</h1>
+        <textarea
+          onPaste={handlePaste}
+          placeholder="粘贴图片到这里..."
+          style={{ width: '100%', height: '200px' }}
+        />
+        <h2>生成的Markdown:</h2>
+        <pre>{markdown}</pre>
+      </div>
     </div>
   );
 }
