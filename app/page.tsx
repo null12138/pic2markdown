@@ -1,3 +1,5 @@
+"use client";
+
 // 添加 Vercel 的动态配置支持
 export const dynamic = 'force-dynamic';
 
